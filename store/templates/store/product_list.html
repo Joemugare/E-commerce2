@@ -1,0 +1,336 @@
+﻿{% extends 'store/base.html' %}
+{% load static cart_tags %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4 text-center text-primary fw-bold" style="font-family: 'Poppins', sans-serif;">
+    Our Products
+  </h1>
+  <p class="text-center text-muted mb-5" style="font-size: 1.2rem;">Browse Our Premium Collection</p>
+
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+      <div class="col">
+        <div class="card h-100 shadow-lg border-0 rounded-lg">
+          {% if product.thumbnail %}
+            <img src="{{ product.thumbnail.url }}" class="card-img-top rounded-top" alt="{{ product.name }}" style="object-fit: cover; height: 220px;">
+          {% else %}
+            <div class="card-img-top d-flex justify-content-center align-items-center bg-light rounded-top" style="height: 220px;">
+              <span class="text-muted">No Image Available</span>
+            </div>
+          {% endif %}
+          <div class="card-body d-flex flex-column p-4">
+            <h5 class="card-title">
+              <a href="{% url 'store:product_detail' pk=product.id %}" style="text-decoration: none; color: inherit;">
+                {{ product.name }}
+              </a>
+            </h5>
+            <p class="card-text text-muted">{{ product.description|truncatewords:20 }}</p>
+
+            {% for price in product.price_set.all %}
+              <div class="mt-auto">
+                <hr class="my-3">
+                <p class="mb-1"><strong>Price:</strong> KSH {{ price.price }}</p>
+                <p class="mb-2 cart-count" data-price-id="{{ price.id }">
+                  <strong>In Cart:</strong> 🛒 <span class="item-count">{{ cart|get_item:price.id|default:"0" }}</span> item(s)
+                </p>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <form class="add-to-cart-form" action="{% url 'store:add_to_cart' price.id %}" method="POST" data-price-id="{{ price.id }">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary btn-sm add-to-cart-btn">
+                      🛒 Add to Cart
+                    </button>
+                  </form>
+
+                  {% if cart|get_item:price.id %}
+                    <form class="remove-from-cart-form" action="{% url 'store:remove_from_cart' price.id %}" method="POST" data-price-id="{{ price.id }">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-danger btn-sm remove-from-cart-btn">
+                        <i class="fas fa-trash-alt me-1"></i> Remove
+                      </button>
+                    </form>
+                  {% else %}
+                    <form class="remove-from-cart-form d-none" action="{% url 'store:remove_from_cart' price.id %}" method="POST" data-price-id="{{ price.id }">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-danger btn-sm remove-from-cart-btn">
+                        <i class="fas fa-trash-alt me-1"></i> Remove
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+
+                <form id="payment-form-{{ price.id }}" action="{% url 'store:create_checkout_session' price.id %}" method="POST">
+                  {% csrf_token %}
+                  <div class="payment-options">
+                    <div class="form-check mb-2">
+                      <input class="form-check-input" type="radio" name="payment_method" value="stripe" id="stripe-{{ price.id }}" checked>
+                      <label class="form-check-label" for="stripe-{{ price.id }}">
+                        <i class="fas fa-credit-card me-1"></i> Pay with Card
+                      </label>
+                    </div>
+                    <div class="form-check mb-2">
+                      <input class="form-check-input" type="radio" name="payment_method" value="mpesa" id="mpesa-{{ price.id }}">
+                      <label class="form-check-label" for="mpesa-{{ price.id }}">
+                        <i class="fas fa-mobile-alt me-1"></i> Pay with M-Pesa
+                      </label>
+                    </div>
+                    <input type="text" name="phone_number" class="form-control mt-2" id="phone-input-{{ price.id }}" placeholder="2547XXXXXXXX" style="display: none;" pattern="2547[0-9]{8}" title="Phone number must start with 2547 followed by 8 digits">
+                    <div class="invalid-feedback" id="phone-error-{{ price.id }}">Please enter a valid phone number (e.g., 2547XXXXXXXX).</div>
+                    <button type="submit" class="btn btn-success w-100 mt-3" id="checkout-btn-{{ price.id }}">
+                      <i class="fas fa-check-circle me-1"></i> Checkout
+                    </button>
+                  </div>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-center text-muted">No Products Available at the Moment.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+/* Product Card Styling */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px !important;
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 0 15px rgba(59, 130, 246, 0.3) !important;
+}
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+.card-body {
+  background: #ffffff;
+}
+.card-title {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+}
+.btn-outline-primary, .btn-outline-danger, .btn-success {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.btn-outline-primary:hover {
+  background-color: #3b82f6;
+  color: white;
+}
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+.btn-success {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+.btn-success:hover {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+.payment-options .form-check-label {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.payment-options .form-check-label:hover {
+  color: #3b82f6;
+}
+.form-control:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+</style>
+
+<!-- JavaScript for Cart and Checkout -->
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+const stripe = Stripe('{{ stripe_publishable_key|default:"" }}');
+
+function showToast(message, isError = false) {
+  console.log('showToast called:', message, isError); // Debug
+  try {
+    const toast = document.getElementById('toastNotification');
+    if (!toast) {
+      console.error('Toast notification element not found');
+      alert(message); // Fallback
+      return;
+    }
+    const toastBody = toast.querySelector('.toast-body');
+    if (!toastBody) {
+      console.error('Toast body element not found');
+      alert(message);
+      return;
+    }
+    toastBody.textContent = message;
+    toast.classList.remove('bg-success', 'bg-danger', 'text-white');
+    toast.classList.add(isError ? 'bg-danger' : 'bg-success', 'text-white');
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+  } catch (e) {
+    console.error('Toast error:', e);
+    alert(message); // Fallback
+  }
+}
+
+document.querySelectorAll('.add-to-cart-form, .remove-from-cart-form').forEach(form => {
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    console.log('Cart form submitted:', form.action); // Debug
+
+    const priceId = form.dataset.priceId;
+    const isAddAction = form.classList.contains('add-to-cart-form');
+    const button = form.querySelector('button');
+    const cartCountElement = document.querySelector(`.cart-count[data-price-id="${priceId}"] .item-count`);
+    const removeForm = document.querySelector(`.remove-from-cart-form[data-price-id="${priceId}"]`);
+
+    if (!button || !cartCountElement || !removeForm) {
+      console.error('Cart form elements missing:', { button, cartCountElement, removeForm });
+      showToast('Form setup error.', true);
+      return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = isAddAction ? '<i class="fas fa-spinner fa-spin me-1"></i> Adding...' : '<i class="fas fa-spinner fa-spin me-1"></i> Removing...';
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Cart response:', result); // Debug
+
+      if (result.message) {
+        cartCountElement.textContent = result.cart_count || 0;
+        if (result.cart_count > 0) {
+          removeForm.classList.remove('d-none');
+        } else {
+          removeForm.classList.add('d-none');
+        }
+        showToast(isAddAction ? 'Item added to cart!' : 'Item removed from cart!', false);
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Cart error:', error);
+      showToast(`Failed to ${isAddAction ? 'add' : 'remove'} item: ${error.message}`, true);
+    } finally {
+      button.disabled = false;
+      button.innerHTML = isAddAction ? '🛒 Add to Cart' : '<i class="fas fa-trash-alt me-1"></i> Remove';
+    }
+  });
+});
+
+document.querySelectorAll('[id^="payment-form-"]').forEach(form => {
+  console.log('Initializing checkout form:', form.id); // Debug
+  const priceId = form.id.split('-')[2];
+  const phoneInput = document.getElementById(`phone-input-${priceId}`);
+  const checkoutBtn = document.getElementById(`checkout-btn-${priceId}`);
+  const phoneError = document.getElementById(`phone-error-${priceId}`);
+
+  if (!phoneInput || !checkoutBtn || !phoneError) {
+    console.error('Checkout form elements missing:', { phoneInput, checkoutBtn, phoneError });
+    alert('Checkout form setup error.');
+    return;
+  }
+
+  form.querySelectorAll('input[name="payment_method"]').forEach(input => {
+    input.addEventListener('change', () => {
+      console.log('Payment method changed:', input.value); // Debug
+      const isMpesa = input.value === 'mpesa';
+      phoneInput.style.display = isMpesa ? 'block' : 'none';
+      phoneInput.required = isMpesa;
+      phoneInput.classList.remove('is-invalid');
+      phoneError.style.display = 'none';
+    });
+  });
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    console.log('Checkout form submitted:', form.action); // Debug
+
+    const isMpesa = form.querySelector('input[name="payment_method"]:checked').value === 'mpesa';
+    if (isMpesa && !phoneInput.value.match(/^2547[0-9]{8}$/)) {
+      phoneInput.classList.add('is-invalid');
+      phoneError.style.display = 'block';
+      showToast('Invalid phone number. Please use format 2547XXXXXXXX.', true);
+      return;
+    }
+
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
+
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log('Checkout response status:', response.status); // Debug
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      console.log('Raw checkout response:', text); // Debug
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (parseError) {
+        throw new Error('Invalid JSON response: ' + parseError.message);
+      }
+      console.log('Parsed checkout response:', result); // Debug
+
+      if (result.redirect_url) {
+        console.log('Redirecting to Stripe:', result.redirect_url); // Debug
+        showToast('Redirecting to payment...', false);
+        setTimeout(() => {
+          window.location.href = result.redirect_url; // Delayed redirect
+        }, 500);
+      } else if (result.message) {
+        showToast(result.message, false);
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      showToast('Checkout failed: ' + error.message, true);
+    } finally {
+      checkoutBtn.disabled = false;
+      checkoutBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Checkout';
+    }
+  });
+});
+</script>
+{% endblock %}
