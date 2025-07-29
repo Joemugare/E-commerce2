@@ -2,12 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\store",
-    "\\store\\templates",
     "\\store\\templates\\store",
-    "\\store\\templatetags",
-    "\\store_project",
-    "\\store_project\\__pycache__"
+    "\\store_project"
   ],
-  "SelectedNode": "\\.env",
+  "SelectedNode": "\\store_project\\settings.py",
   "PreviewInSolutionExplorer": false
 }
