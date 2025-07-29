@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
     "",
+    "\\media\\products",
     "\\store",
+    "\\store\\store",
+    "\\store\\templates\\store",
     "\\store_project"
   ],
   "SelectedNode": "\\store_project\\settings.py",
