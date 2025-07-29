@@ -1,40 +1,35 @@
+# render.yaml
 services:
-  db:
-    image: postgres:13
-    container_name: postgres_db
-    restart: always
-    environment:
-      POSTGRES_DB: store_project
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Qunta729
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+  - type: web
+    name: ecommerce2
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SECRET_KEY
+        value: your-django-secret-key
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: e-commerce2-ahi8.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecommerce2-db
+          property: connectionString
+      - key: STRIPE_SECRET_KEY
+        value: your-stripe-secret-key
+      - key: STRIPE_PUBLISHABLE_KEY
+        value: your-stripe-publishable-key
+      - key: STRIPE_WEBHOOK_SECRET
+        value: your-stripe-webhook-secret
+      - key: PAYMENT_SUCCESS_URL
+        value: https://e-commerce2-ahi8.onrender.com/success/
+      - key: PAYMENT_CANCEL_URL
+        value: https://e-commerce2-ahi8.onrender.com/cancel/
 
-  web:
-    build:
-      context: .
-    container_name: django_web
-    command: >
-      sh -c "sleep 10 &&
-             python manage.py makemigrations &&
-             python manage.py migrate &&
-             gunicorn --bind 0.0.0.0:8000 store_project.wsgi"
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  pgdata:
+databases:
+  - name: ecommerce2-db
+    databaseName: storedb
+    user: postgres
+    plan: free
