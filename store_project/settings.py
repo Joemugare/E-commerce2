@@ -1,7 +1,7 @@
-﻿import os
+﻿import dj_database_url
+import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 
 # Load environment variables
 load_dotenv()
@@ -60,15 +60,12 @@ WSGI_APPLICATION = 'store_project.wsgi.application'
 
 # Database configuration
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
+    'default': dj_database_url.config(
+        default='postgres://myuser:Qunta729@localhost:5432/store_project_db',
+        conn_max_age=600
+    )
 }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -83,7 +80,7 @@ TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'store/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -91,7 +88,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', BASE_DIR / 'media')
 
 # Stripe settings
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
