@@ -1,5 +1,5 @@
-﻿import dj_database_url
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -10,10 +10,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
-SECRET_KEY = os.getenv('SECRET_KEY', 'your-django-secret-key')  # Ensure SECRET_KEY is set in Render's Environment tab
-DEBUG = os.getenv('DEBUG', 'False') == 'True'  # Set to False for production
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-django-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,e-commerce2-ahi8.onrender.com').split(',')
-# Add Render's external hostname dynamically
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
@@ -24,7 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # Use WhiteNoise for static files
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'store.apps.StoreConfig',
     'cart',
@@ -32,7 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise middleware for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,9 +63,9 @@ WSGI_APPLICATION = 'store_project.wsgi.application'
 # Database configuration
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),  # Use Render's DATABASE_URL
+        default=os.getenv('DATABASE_URL'),
         conn_max_age=600,
-        conn_health_checks=True,  # Enable health checks for better connection management
+        conn_health_checks=True,
     )
 }
 
@@ -110,10 +109,10 @@ MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
 MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
 
 # Security settings for production
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'  # Redirect HTTP to HTTPS
-CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True') == 'True'  # Use secure cookies for CSRF
-SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True') == 'True'  # Use secure cookies for sessions
-SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))  # Enable HSTS for 1 hour
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True') == 'True'
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True') == 'True'
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
 SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
 
@@ -132,10 +131,10 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'ERROR',  # Log errors to console for debugging
+            'level': 'ERROR',
             'propagate': True,
         },
-        '': {  # Catch-all logger for your app
+        '': {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
