@@ -60,10 +60,14 @@ WSGI_APPLICATION = 'store_project.wsgi.application'
 
 # Database configuration
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://myuser:Qunta729@localhost:5432/store_project_db',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'store_project_db',
+        'USER': 'myuser',
+        'PASSWORD': 'Qunta729',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 }
 
 # Password validation
